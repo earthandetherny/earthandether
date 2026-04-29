@@ -215,6 +215,11 @@
 
     /* ── FOOTER ── */
     footer { border-top: 1px solid var(--line); padding: 2rem; text-align: center; }
+    footer .footer-text { font-size: 0.7rem; letter-spacing: 0.16em; color: var(--mid); text-transform: uppercase; line-height: 2; }
+    @media (max-width: 480px) {
+      .footer-sep { display: none; }
+      footer .footer-text span:not(.footer-sep) { display: block; }
+    }
     footer p { font-size: 0.7rem; letter-spacing: 0.16em; color: var(--mid); text-transform: uppercase; }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
@@ -285,15 +290,15 @@
         </div>
         <div class="links-grid">
           <a href="https://www.etsy.com/shop/earthandetherny/" target="_blank" rel="noopener" class="link-card reveal reveal-delay-1">
-            <div class="card-image-wrap"><img class="card-image" src="https://chairish-prod.freetls.fastly.net/image/product/sized/1b795472-cc76-452c-a52f-a7177bcd54f8/antique-french-girandole-waterfall-crystal-table-lamp-4535?aspect=fit&width=600&height=450" alt="Etsy"/></div>
+            <div class="card-image-wrap"><img class="card-image" src="https://i.etsystatic.com/25830372/r/il/d7e029/7536133554/il_1588xN.7536133554_i893.jpg" alt="Etsy"/></div>
             <div class="card-body"><span class="card-platform">Etsy</span><div class="card-title">Etsy Shop</div><p class="card-desc">Browse our full selection of vintage and antique finds — ceramics, lighting, textiles, and more.</p><span class="card-cta">Shop Now →</span></div>
           </a>
           <a href="https://www.chairish.com/shop/earthandether" target="_blank" rel="noopener" class="link-card reveal reveal-delay-2">
-            <div class="card-image-wrap"><img class="card-image" src="https://chairish-prod.freetls.fastly.net/image/product/sized/27d2abb6-2b4f-4530-93cc-aaf91d76950c/large-vintage-brass-and-crystal-chandelier-12-arms-5166?aspect=fit&width=600&height=450" alt="Chairish"/></div>
+            <div class="card-image-wrap"><img class="card-image" src="https://chairish-prod.freetls.fastly.net/image/product/sized/27d2abb6-2b4f-4530-93cc-aaf91d76950c/large-vintage-brass-and-crystal-chandelier-12-arms-5166?aspect=fit&width=1600&height=1600" alt="Chairish"/></div>
             <div class="card-body"><span class="card-platform">Chairish</span><div class="card-title">Chairish Shop</div><p class="card-desc">Discover statement furniture, art, and decor curated for the design-forward home.</p><span class="card-cta">Shop Now →</span></div>
           </a>
           <a href="https://www.ebay.com/usr/earthandetherny" target="_blank" rel="noopener" class="link-card reveal reveal-delay-3">
-            <div class="card-image-wrap"><img class="card-image" src="https://chairish-prod.freetls.fastly.net/image/product/sized/4c7621ac-97eb-49f2-b34e-08e916e032df/mid-20th-century-large-bronze-louis-xvi-style-wall-sconce-pair-with-bow-tassels-9807?aspect=fit&width=600&height=450" alt="eBay"/></div>
+            <div class="card-image-wrap"><img class="card-image" src="https://i.ebayimg.com/images/g/3XIAAeSwvlZp1GCC/s-l1600.webp" alt="eBay"/></div>
             <div class="card-body"><span class="card-platform">eBay</span><div class="card-title">eBay Store</div><p class="card-desc">More rare finds and one-of-a-kind pieces — updated regularly with fresh sourced antiques.</p><span class="card-cta">Shop Now →</span></div>
           </a>
         </div>
@@ -345,7 +350,13 @@
   </main>
 
   <footer>
-    <p>© Earth + Ether &nbsp;·&nbsp; Rochester, New York &nbsp;·&nbsp; earthandetherny.com</p>
+    <p class="footer-text">
+      <span>© Earth + Ether</span>
+      <span class="footer-sep"> &nbsp;·&nbsp; </span>
+      <span>Rochester, New York</span>
+      <span class="footer-sep"> &nbsp;·&nbsp; </span>
+      <span>earthandetherny.com</span>
+    </p>
   </footer>
 
   <script>
@@ -363,21 +374,28 @@
   // 2. SCROLL REVEAL
   // ══════════════════════════════════════
   const io = new IntersectionObserver(entries =>
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }}),
-    { threshold: 0.12 }
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    }), { threshold: 0.12 }
   );
   document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el => io.observe(el));
 
   // ══════════════════════════════════════
   // 3. RECENT ARRIVALS
-  //    Loads from /listings.json — a file
-  //    auto-updated every Monday by GitHub
-  //    Actions (see .github/workflows/).
-  //    No proxies. No CORS. Always fresh.
+  //
+  //  Priority chain — first success wins:
+  //  1. Etsy API (live, direct, always fresh)
+  //  2. /listings.json (weekly GitHub cache)
+  //  3. Friendly fallback link to Etsy shop
   // ══════════════════════════════════════
+  const ETSY_KEY  = '5u3596bqh04htco3da4nu5sr';
+  const ETSY_SHOP = 'earthandetherny';
+  const ETSY_URL  = `https://api.etsy.com/v3/application/shops/${ETSY_SHOP}/listings/active`
+                  + `?includes=Images&limit=12&sort_on=created&sort_order=down&state=active`;
 
+  // ── Card builder ──────────────────────
   function makeCard(item, cls) {
-    const a = document.createElement('a');
+    const a     = document.createElement('a');
     a.href      = item.url;
     a.target    = '_blank';
     a.rel       = 'noopener noreferrer';
@@ -397,61 +415,117 @@
     return a;
   }
 
+  // ── Dedup by URL ──────────────────────
+  function dedup(items) {
+    const seen = new Set();
+    return items.filter(i => {
+      if (!i.url || !i.img || seen.has(i.url)) return false;
+      seen.add(i.url); return true;
+    });
+  }
+
+  // ── Render desktop marquee ────────────
   function renderDesktop(items) {
     const el = document.getElementById('products-marquee');
     if (!el) return;
     el.innerHTML = '';
-    if (!items.length) { showFallback(); return; }
-    // Append once, clone once → seamless infinite scroll
-    items.forEach(i => el.appendChild(makeCard(i, 'marquee-thumb')));
-    items.forEach(i => el.appendChild(makeCard(i, 'marquee-thumb')));
-    el.style.animationDuration = (items.length * 3.5) + 's';
+    const pool = dedup(items);
+    if (!pool.length) { showFallback(); return; }
+    pool.forEach(i => el.appendChild(makeCard(i, 'marquee-thumb')));
+    pool.forEach(i => el.appendChild(makeCard(i, 'marquee-thumb')));
+    el.style.animationDuration = (pool.length * 3.5) + 's';
   }
 
+  // ── Render mobile grid ────────────────
   function renderMobile(items) {
     const el = document.getElementById('products-grid-mobile');
     if (!el) return;
     el.innerHTML = '';
-    items.slice(0, 6).forEach(i => el.appendChild(makeCard(i, 'product-thumb')));
+    dedup(items).slice(0, 6).forEach(i => el.appendChild(makeCard(i, 'product-thumb')));
   }
 
+  function render(items) {
+    renderDesktop(items);
+    renderMobile(items);
+  }
+
+  // ── Fallback message ──────────────────
   function showFallback() {
-    const msg = `<div style="width:100%;padding:3rem 2rem;text-align:center">
-      <p style="font-family:'Playfair Display',serif;font-style:italic;color:#6b6560;font-size:1.05rem;margin-bottom:1rem">
-        Browse our latest arrivals on Etsy</p>
-      <a href="https://www.etsy.com/shop/earthandetherny" target="_blank"
-         style="font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
-                color:#1c1a18;border-bottom:1px solid #8b7355;padding-bottom:2px;text-decoration:none">
-        View the Full Shop →</a></div>`;
+    const msg = `
+      <div style="width:100%;padding:3rem 2rem;text-align:center">
+        <p style="font-family:'Playfair Display',serif;font-style:italic;
+                  color:#6b6560;font-size:1.05rem;margin-bottom:1rem">
+          Browse our latest arrivals on Etsy</p>
+        <a href="https://www.etsy.com/shop/earthandetherny" target="_blank"
+           style="font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
+                  color:#1c1a18;border-bottom:1px solid #8b7355;
+                  padding-bottom:2px;text-decoration:none">
+          View the Full Shop →</a>
+      </div>`;
     ['products-marquee','products-grid-mobile'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.innerHTML = msg;
     });
   }
 
-  // Deduplicate by URL
-  function dedup(items) {
-    const seen = new Set();
-    return items.filter(i => {
-      if (!i.url || seen.has(i.url)) return false;
-      seen.add(i.url); return true;
+  // ── Source 1: Etsy API (live) ─────────
+  async function fromEtsy() {
+    const res = await fetch(ETSY_URL, {
+      headers: { 'x-api-key': ETSY_KEY },
+      signal: AbortSignal.timeout(10000),
     });
+    if (!res.ok) throw new Error(`Etsy API: ${res.status}`);
+    const data = await res.json();
+    const results = data.results || [];
+    if (!results.length) throw new Error('Etsy: no active listings');
+
+    return results.map(r => {
+      const imgs = r.images || [];
+      const img  = imgs[0]?.url_570xN || imgs[0]?.url_fullxfull || '';
+      return {
+        url:   `https://www.etsy.com/listing/${r.listing_id}`,
+        img,
+        title: (r.title || '').trim(),
+      };
+    }).filter(i => i.img);
   }
 
-  // Load listings.json (same-origin on GitHub Pages — no CORS ever)
-  (async function loadListings() {
+  // ── Source 2: /listings.json (cache) ──
+  async function fromCache() {
+    const res = await fetch('/listings.json', {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error(`listings.json: ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) throw new Error('listings.json: empty');
+    return data;
+  }
+
+  // ── Main loader ───────────────────────
+  (async function load() {
+    // Try Etsy API first (live data, sold items impossible)
     try {
-      const res   = await fetch('/listings.json', { cache: 'no-store' });
-      if (!res.ok) throw new Error('listings.json not found (HTTP ' + res.status + ')');
-      const data  = await res.json();
-      const items = dedup(Array.isArray(data) ? data : []);
-      if (!items.length) throw new Error('empty listings');
-      renderDesktop(items);
-      renderMobile(items);
+      const items = await fromEtsy();
+      console.log(`✓ Etsy API: ${items.length} active listings`);
+      render(items);
+      return;
     } catch (e) {
-      console.warn('listings.json load failed:', e.message);
-      showFallback();
+      console.warn('Etsy API failed:', e.message);
     }
+
+    // Fall back to cached listings.json
+    try {
+      const items = await fromCache();
+      console.log(`✓ Cache: ${items.length} listings`);
+      render(items);
+      return;
+    } catch (e) {
+      console.warn('Cache failed:', e.message);
+    }
+
+    // Last resort: friendly link
+    showFallback();
   })();
 </script>
 </body>
